@@ -7,7 +7,9 @@ description = "HomePlug AV/AV2 discovery and diagnostics"
 publish = false
 
 [dependencies]
+anyhow = "1"
 clap = { version = "4.5", features = ["derive"] }
+thiserror = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 libc = "0.2"

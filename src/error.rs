@@ -1,34 +1,15 @@
-use std::fmt;
-
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("invalid MAC address: {0}")]
     InvalidMac(String),
+    #[error("truncated {0}")]
     Truncated(&'static str),
+    #[error("invalid {0}")]
     Invalid(&'static str),
-    Io(std::io::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error("{0}")]
     Transport(String),
+    #[error("AF_PACKET transport is only available on Linux")]
     UnsupportedPlatform,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::InvalidMac(s) => write!(f, "invalid MAC address: {s}"),
-            Self::Truncated(s) => write!(f, "truncated {s}"),
-            Self::Invalid(s) => write!(f, "invalid {s}"),
-            Self::Io(e) => e.fmt(f),
-            Self::Transport(e) => f.write_str(e),
-            Self::UnsupportedPlatform => {
-                write!(f, "AF_PACKET transport is only available on Linux")
-            }
-        }
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl From<std::io::Error> for Error {
-    fn from(value: std::io::Error) -> Self {
-        Self::Io(value)
-    }
 }

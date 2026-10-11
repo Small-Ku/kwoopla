@@ -11,4 +11,4 @@
 
 ## Host/runtime boundary
 
-The protocol crate must continue to build and test on Windows. Linux `AF_PACKET`, future Windows Npcap transport, and real-device behavior must be validated independently; a build on one platform is not runtime acceptance for another.
+The protocol crate must continue to build and test on Windows. Linux `AF_PACKET`, Windows Npcap, and real-device behavior must be validated independently; a build on one platform is not runtime acceptance for another.

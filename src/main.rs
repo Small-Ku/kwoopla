@@ -1,8 +1,14 @@
 use clap::{Parser, Subcommand};
 use etherparse::Ethernet2Slice;
+#[cfg(target_os = "linux")]
+use kwoopla::LinuxTransport as PlatformTransport;
+#[cfg(not(any(target_os = "linux", windows)))]
+use kwoopla::LinuxTransport as PlatformTransport;
+#[cfg(windows)]
+use kwoopla::WindowsTransport as PlatformTransport;
 use kwoopla::{
     BROADCOM_OUI, DiscoveredNetwork, DiscoveredStation, ETHERTYPE_HPAV, ETHERTYPE_MEDIAXTREAM,
-    Error, LinuxTransport, MacAddress, ManagementMessage, PhyRate, StationCapabilities, Transport,
+    Error, MacAddress, ManagementMessage, PhyRate, StationCapabilities, Transport,
     parse_broadcom_network_info, parse_discover_list, parse_network_stats,
     parse_station_capabilities,
 };
@@ -94,7 +100,7 @@ fn run() -> Result<(), Error> {
     let interface = args.interface.as_deref().ok_or(Error::Invalid(
         "an interface is required; pass -i/--interface",
     ))?;
-    let mut transport = LinuxTransport::new(interface)?;
+    let mut transport = PlatformTransport::new(interface)?;
     let (output, result_count) = match args.command {
         Command::Discover => {
             let (devices, networks) = discover(&mut transport)?;

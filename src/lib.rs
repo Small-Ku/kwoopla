@@ -13,4 +13,6 @@ pub use homeplug::{
     parse_network_stats, parse_station_capabilities,
 };
 pub use mac::MacAddress;
+#[cfg(windows)]
+pub use transport::WindowsTransport;
 pub use transport::{LinuxTransport, Transport};

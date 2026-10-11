@@ -6,6 +6,7 @@ pub enum Error {
     Truncated(&'static str),
     Invalid(&'static str),
     Io(std::io::Error),
+    Transport(String),
     UnsupportedPlatform,
 }
 
@@ -16,6 +17,7 @@ impl fmt::Display for Error {
             Self::Truncated(s) => write!(f, "truncated {s}"),
             Self::Invalid(s) => write!(f, "invalid {s}"),
             Self::Io(e) => e.fmt(f),
+            Self::Transport(e) => f.write_str(e),
             Self::UnsupportedPlatform => {
                 write!(f, "AF_PACKET transport is only available on Linux")
             }

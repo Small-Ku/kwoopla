@@ -1,8 +1,12 @@
 //! Raw Ethernet transport implementations.
 
 mod linux;
+#[cfg(windows)]
+mod windows;
 
 pub use linux::LinuxTransport;
+#[cfg(windows)]
+pub use windows::WindowsTransport;
 
 use crate::{Error, MacAddress};
 use std::time::Duration;

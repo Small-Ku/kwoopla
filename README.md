@@ -10,20 +10,29 @@ The current implementation is read-only. It has been tested with TP-Link TL-PA90
 | --- | --- |
 | Linux | Supported through raw `AF_PACKET` Ethernet sockets |
 | OpenWrt / kooWrt | Tested on aarch64 |
-| Windows | Not yet supported; a native Npcap transport is planned |
+| Windows | Supported through Npcap |
 | WSL2 | Builds successfully, but the default NAT network does not expose the physical HomePlug Layer-2 segment |
 
-Raw Ethernet access requires root or an equivalent `CAP_NET_RAW` capability.
+On Linux, raw Ethernet access requires root or an equivalent `CAP_NET_RAW` capability. On Windows, install the Npcap runtime before running `kwoopla`.
 
 ## Build
 
 Rust 1.85 or newer is required.
 
+On Linux:
+
 ```sh
 cargo build --release
 ```
 
-The resulting binary is `target/release/kwoopla`.
+On Windows, install the Npcap runtime and download the Npcap SDK. Point `LIBPCAP_LIBDIR` at the SDK import libraries before building:
+
+```powershell
+$env:LIBPCAP_LIBDIR = 'C:\path\to\npcap-sdk\Lib\x64'
+cargo build --release
+```
+
+The resulting binary is `target/release/kwoopla` on Linux and `target\release\kwoopla.exe` on Windows. The Npcap SDK is only a build dependency and does not need to be copied into the repository.
 
 ## Usage
 
@@ -41,6 +50,13 @@ Use `--json` for structured, versioned output:
 sudo ./target/release/kwoopla -i eth0 --json discover
 sudo ./target/release/kwoopla -i eth0 --json info
 sudo ./target/release/kwoopla -i eth0 --json rates
+```
+
+On Windows, `-i` accepts a Windows interface friendly name, adapter description, Npcap device name, or adapter GUID:
+
+```powershell
+.\target\release\kwoopla.exe -i 'Ethernet' discover
+.\target\release\kwoopla.exe -i 'Ethernet' --json rates
 ```
 
 ### `discover`

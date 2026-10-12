@@ -64,7 +64,9 @@ impl WindowsTransport {
                     "no Npcap interface matches '{interface}'; select its Npcap name, Windows friendly name, interface description, or adapter GUID"
                 )));
             }
-            1 => matches.pop().expect("one match exists"),
+            1 => matches.pop().ok_or_else(|| {
+                Error::Transport("matched Npcap interface disappeared during selection".to_owned())
+            })?,
             count => {
                 return Err(Error::Transport(format!(
                     "interface '{interface}' is ambiguous ({count} Npcap adapters match); select the Npcap device name or adapter GUID"
@@ -199,8 +201,13 @@ fn enumerate_adapters() -> Result<Vec<Adapter>, Error> {
                     .to_string_lossy()
                     .into_owned()
             };
-            let mac = (raw.PhysicalAddressLength == 6)
-                .then(|| MacAddress(raw.PhysicalAddress[..6].try_into().expect("six-byte MAC")));
+            let mac = if raw.PhysicalAddressLength == 6 {
+                let mut bytes = [0u8; 6];
+                bytes.copy_from_slice(&raw.PhysicalAddress[..6]);
+                Some(MacAddress(bytes))
+            } else {
+                None
+            };
             adapters.push(Adapter {
                 guid: normalize_guid(&adapter_name),
                 friendly_name: wide_string(raw.FriendlyName),

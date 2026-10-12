@@ -12,3 +12,11 @@
 ## Host/runtime boundary
 
 The protocol crate must continue to build and test on Windows. Linux `AF_PACKET`, Windows Npcap, and real-device behavior must be validated independently; a build on one platform is not runtime acceptance for another.
+
+## Build workflow
+
+- Use the repository mise tasks for normal development. Missing configured tools are auto-installed by mise; do not add a manual bootstrap step. Keep the ordinary task names; do not add a parallel `build-fast` or backend-selection task surface.
+- `mise run build` uses the pinned dated nightly Cranelift backend for workspace crates, LLVM for dependencies, dependency `opt-level = 3` and Mr Boxington.
+- Stable LLVM remains the authority for `check`, Clippy, tests, release builds, and correctness/runtime acceptance.
+- The Clippy task denies `unwrap()` and `expect()` outside test code. Keep the test-only allowance in `clippy.toml` instead of crate-level lint attributes.
+- Keep the Npcap runtime as a system dependency. The Windows-only Npcap SDK is managed by mise and provides `LIBPCAP_LIBDIR` automatically; do not vendor the SDK.

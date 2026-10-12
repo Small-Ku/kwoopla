@@ -1,0 +1,57 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+min_version = "2026.9.15"
+
+[settings]
+lockfile = true
+lockfile_platforms = ["linux-x64", "windows-x64"]
+
+[tools]
+rust = { version = "stable", components = ["clippy", "rustfmt"], profile = "minimal", mr_boxington = true }
+mr-boxington = "1.14.0"
+[tools."http:npcap-sdk"]
+version = "1.16"
+checksum = "sha256:f0a8be7778ee3ae1b99bbbecb27a3ff0f6c111a4093f1c78c5c5a099607184db"
+os = ["windows"]
+platforms.windows-x64.url = "https://npcap.com/dist/npcap-sdk-{{ version }}.zip"
+
+[env]
+CARGO_TERM_COLOR = "always"
+RUST_BACKTRACE = "1"
+LIBPCAP_LIBDIR = { value = '{% if os() == "windows" %}{{ tools["npcap-sdk"].path }}/Lib/x64{% endif %}', tools = true }
+
+[tasks.doctor]
+description = "Check the Rust and Mr Boxington toolchain"
+run = "mbx doctor"
+
+[tasks.fmt]
+description = "Check Rust formatting"
+run = "cargo fmt --all -- --check"
+
+[tasks.check]
+description = "Type-check all targets with stable LLVM through Mr Boxington"
+run = "mbx check --locked --workspace --all-targets"
+
+[tasks.build]
+description = "Build with Cranelift for workspace crates and LLVM opt3 for dependencies"
+tools = { rust = { version = "nightly-2026-10-11", components = ["rustc-codegen-cranelift-preview"], profile = "minimal", mr_boxington = true } }
+run = 'mbx build --locked --workspace --all-targets -Z codegen-backend --config "profile.dev.codegen-backend=\"cranelift\"" --config "profile.dev.package.\"*\".codegen-backend=\"llvm\""'
+
+[tasks.build-release]
+description = "Build release artifacts with stable LLVM through Mr Boxington"
+run = "mbx build --locked --release --workspace --all-targets"
+
+[tasks.clippy]
+description = "Run Clippy and reject unwrap/expect outside tests"
+run = "mbx clippy --locked --workspace --all-targets -- -D warnings -D clippy::unwrap_used -D clippy::expect_used"
+
+[tasks.test]
+description = "Run all tests with stable LLVM through Mr Boxington"
+run = "mbx test --locked --workspace --all-targets"
+
+[tasks.ci]
+description = "Run stable validation gates"
+run = [
+  { task = "fmt" },
+  { task = "clippy" },
+  { task = "test" },
+]

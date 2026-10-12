@@ -23,7 +23,7 @@ impl LinuxTransport {
             return Err(Error::Io(std::io::Error::last_os_error()));
         }
         let path = format!("/sys/class/net/{interface}/address");
-        let source = MacAddress::parse(&std::fs::read_to_string(path)?.trim())?;
+        let source = MacAddress::parse(std::fs::read_to_string(path)?.trim())?;
         // SAFETY: socket arguments follow Linux AF_PACKET raw socket API.
         let socket: RawFd = unsafe {
             libc::socket(

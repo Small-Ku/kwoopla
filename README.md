@@ -17,22 +17,21 @@ On Linux, raw Ethernet access requires root or an equivalent `CAP_NET_RAW` capab
 
 ## Build
 
-Rust 1.85 or newer is required.
+Rust 1.85 or newer is required. Development toolchains are managed with mise. Run the repository tasks directly; mise installs missing configured tools automatically. The Cranelift build uses the dated nightly declared in `mise.toml`, and Mr Boxington is pinned by the project configuration and lockfile.
 
-On Linux:
+The normal development build uses the locked nightly Cranelift backend for the workspace crate and LLVM with `opt-level = 3` for dependencies. Check, Clippy, tests, and release builds stay on stable LLVM and run through Mr Boxington:
 
 ```sh
-cargo build --release
+mise run build
+mise run check
+mise run clippy
+mise run test
+mise run build-release
 ```
 
-On Windows, install the Npcap runtime and download the Npcap SDK. Point `LIBPCAP_LIBDIR` at the SDK import libraries before building:
+On Windows, install the Npcap runtime before running `kwoopla`. The Npcap SDK is managed by mise as a Windows-only project tool; build tasks set `LIBPCAP_LIBDIR` from its mise install path automatically.
 
-```powershell
-$env:LIBPCAP_LIBDIR = 'C:\path\to\npcap-sdk\Lib\x64'
-cargo build --release
-```
-
-The resulting binary is `target/release/kwoopla` on Linux and `target\release\kwoopla.exe` on Windows. The Npcap SDK is only a build dependency and does not need to be copied into the repository.
+The release binary is `target/release/kwoopla` on Linux and `target\release\kwoopla.exe` on Windows. The Npcap SDK remains outside the repository.
 
 ## Usage
 

@@ -2,40 +2,34 @@
 
 `kwoopla` is a Rust command-line utility and library for discovering HomePlug AV/AV2 powerline adapters and reading network information and PHY rates.
 
-The current implementation is read-only. It has been tested with TP-Link TL-PA9020P adapters using Broadcom BCM60500 hardware.
+It is currently read-only and has been tested with TP-Link TL-PA9020P adapters using Broadcom BCM60500 hardware.
 
 ## Platform support
 
-| Platform | Status |
+| Platform | Support |
 | --- | --- |
-| Linux | Supported through raw `AF_PACKET` Ethernet sockets |
-| OpenWrt / kooWrt | Tested on aarch64 |
-| Windows | Supported through Npcap |
-| WSL2 | Builds successfully, but the default NAT network does not expose the physical HomePlug Layer-2 segment |
+| Linux | Raw `AF_PACKET` Ethernet |
+| OpenWrt | Tested on aarch64 |
+| Windows | Npcap |
+| WSL2 | Builds, but default NAT does not expose the physical HomePlug Layer-2 segment |
 
-On Linux, raw Ethernet access requires root or an equivalent `CAP_NET_RAW` capability. On Windows, install the Npcap runtime before running `kwoopla`.
+Linux requires root or `CAP_NET_RAW` for raw Ethernet access. Windows requires the Npcap runtime.
 
 ## Build
 
-Rust 1.85 or newer is required. Development toolchains are managed with mise. Run the repository tasks directly; mise installs missing configured tools automatically. The Cranelift build uses the dated nightly declared in `mise.toml`, and Mr Boxington is pinned by the project configuration and lockfile.
-
-The normal development build uses the locked nightly Cranelift backend for the workspace crate and LLVM with `opt-level = 3` for dependencies. Check, Clippy, tests, and release builds stay on stable LLVM and run through Mr Boxington:
+Rust 1.85 or newer is required. mise installs the configured development tools when a task needs them.
 
 ```sh
 mise run build
-mise run check
-mise run clippy
-mise run test
+mise run ci
 mise run build-release
 ```
 
-On Windows, install the Npcap runtime before running `kwoopla`. The Npcap SDK is managed by mise as a Windows-only project tool; build tasks set `LIBPCAP_LIBDIR` from its mise install path automatically.
-
-The release binary is `target/release/kwoopla` on Linux and `target\release\kwoopla.exe` on Windows. The Npcap SDK remains outside the repository.
+`build` uses Cranelift for development builds. Checks, tests, Clippy, release builds, and runtime tests use stable LLVM. On Windows, mise also installs the Npcap SDK and configures its library path.
 
 ## Usage
 
-Choose the Ethernet interface connected to the powerline network:
+Select the Ethernet interface connected to the powerline network:
 
 ```sh
 sudo ./target/release/kwoopla -i eth0 discover
@@ -43,44 +37,34 @@ sudo ./target/release/kwoopla -i eth0 info
 sudo ./target/release/kwoopla -i eth0 rates
 ```
 
-Use `--json` for structured, versioned output:
+Add `--json` for versioned JSON output:
 
 ```sh
-sudo ./target/release/kwoopla -i eth0 --json discover
 sudo ./target/release/kwoopla -i eth0 --json info
-sudo ./target/release/kwoopla -i eth0 --json rates
 ```
 
-On Windows, `-i` accepts a Windows interface friendly name, adapter description, Npcap device name, or adapter GUID:
+On Windows, `-i` accepts an interface friendly name, adapter description, Npcap device name, or adapter GUID.
 
-```powershell
-.\target\release\kwoopla.exe -i 'Ethernet' discover
-.\target\release\kwoopla.exe -i 'Ethernet' --json rates
-```
+### Commands
 
-### `discover`
+- `discover`: find HomePlug devices on the selected Ethernet segment.
+- `info`: read station capabilities and supported vendor-specific network information.
+- `rates`: read transmit and receive PHY rates for visible peers.
 
-Find HomePlug devices visible on the selected Ethernet segment.
+## Supported protocol paths
 
-### `info`
+- HomePlug AV discovery and station capabilities over EtherType `0x88e1`.
+- HomePlug `CM_NW_STATS` PHY-rate queries.
+- Broadcom / Mediaxtream network information over EtherType `0x8912`.
+- TP-Link TL-PA9020P / Broadcom BCM60500 live testing.
 
-Read station capabilities and supported vendor-specific network information.
+Network key changes, restart, factory reset, and other write operations are not implemented.
 
-Broadcom BCM60500 devices are queried through their Mediaxtream management path.
+See [protocol provenance](docs/provenance.md) for protocol sources and interoperability evidence.
 
-### `rates`
+## License
 
-Read average transmit and receive PHY rates for visible peers.
+Licensed under either of the following, at your option:
 
-## Current scope
-
-Supported and live-tested paths include:
-
-- HomePlug AV discovery and station capabilities over EtherType `0x88e1`;
-- HomePlug `CM_NW_STATS` PHY-rate queries;
-- Broadcom / Mediaxtream network information over EtherType `0x8912`;
-- TP-Link TL-PA9020P / Broadcom BCM60500.
-
-Network key changes, restart, factory reset, and other mutating operations are intentionally not implemented yet.
-
-For protocol-source and interoperability notes, see [docs/provenance.md](docs/provenance.md).
+- [MIT](LICENSE-MIT)
+- [Apache License 2.0](LICENSE-APACHE)

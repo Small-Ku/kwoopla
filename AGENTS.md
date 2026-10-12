@@ -1,22 +1,17 @@
 # Project guidance
 
-- Keep the project independent of KooWrt and keep transport code separate from protocol code.
-- Prefer small, synchronous, read-only steps. Do not add network mutation, NMK/DAK changes, restart, or factory reset without a separate scope decision.
-- Require explicit interface selection for raw Ethernet commands; do not silently select an interface.
-- Treat the TL-PA9020P / BCM60500 as the first live target. Mark behavior that lacks device evidence and avoid guessing undocumented fields.
-- HomePlug AV/AV2 specifications and compatible BSD/MIT references may be used for protocol work. Do not derive implementation code from license-incompatible third-party source. Independent black-box observations may be used as interoperability evidence.
-- If code is reused from another project, preserve its license and required attribution separately. Do not vendor third-party source without a deliberate decision.
-- Keep JSON schemas typed and versioned. Add fixed byte fixtures, malformed-input tests, and output-shape tests when changing a protocol path.
-- No KooWrt package, ubus, LuCI, broad vendor framework, public release, or publication without a separate scope decision.
+- Keep protocol code separate from platform transport code.
+- Keep commands read-only unless a separate decision adds NMK/DAK changes, restart, factory reset, or other write operations.
+- Require an explicit Ethernet interface. Do not select one automatically.
+- Treat TP-Link TL-PA9020P / Broadcom BCM60500 as the first tested device. Mark behavior that lacks device evidence.
+- Use HomePlug specifications and compatible BSD/MIT references. Do not copy code from license-incompatible sources.
+- Keep required licenses and attribution when reusing third-party code. The project license is `MIT OR Apache-2.0`; do not change it without a separate decision.
+- Keep JSON output typed and versioned. Add fixed byte fixtures and malformed-input tests when changing protocol parsing.
+- Do not add broad vendor support, public release, or crate publication without a separate decision.
 
-## Host/runtime boundary
+## Build and checks
 
-The protocol crate must continue to build and test on Windows. Linux `AF_PACKET`, Windows Npcap, and real-device behavior must be validated independently; a build on one platform is not runtime acceptance for another.
-
-## Build workflow
-
-- Use the repository mise tasks for normal development. Missing configured tools are auto-installed by mise; do not add a manual bootstrap step. Keep the ordinary task names; do not add a parallel `build-fast` or backend-selection task surface.
-- `mise run build` uses the pinned dated nightly Cranelift backend for workspace crates, LLVM for dependencies, dependency `opt-level = 3` and Mr Boxington.
-- Stable LLVM remains the authority for `check`, Clippy, tests, release builds, and correctness/runtime acceptance.
-- The Clippy task denies `unwrap()` and `expect()` outside test code. Keep the test-only allowance in `clippy.toml` instead of crate-level lint attributes.
-- Keep the Npcap runtime as a system dependency. The Windows-only Npcap SDK is managed by mise and provides `LIBPCAP_LIBDIR` automatically; do not vendor the SDK.
+- `mise run build` uses the pinned nightly Cranelift backend for workspace code, LLVM for dependencies, and Mr Boxington.
+- Use stable LLVM for `check`, Clippy, tests, release builds, and runtime tests. Check Linux `AF_PACKET`, Windows Npcap, and real-device behavior separately.
+- Clippy rejects `unwrap()` and `expect()` outside tests.
+- Keep the Npcap runtime as a Windows system dependency. mise manages the Npcap SDK; do not vendor it.

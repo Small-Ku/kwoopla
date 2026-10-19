@@ -20,3 +20,5 @@ This document lists sources that directly informed the current protocol implemen
 | PHY rates | Both directions checked against raw `CM_NW_STATS` responses |
 
 The BSD-2-Clause `jbit/powerline` project is used as an architecture and framing reference. The MIT `bpetrikovics/hpavcli` project is used as an interoperability reference for Broadcom and network-stat layouts.
+
+Broadcom power-saving wire behavior: the public [ha-powerline protocol investigation](https://github.com/Chance-Konstruktion/ha-powerline/blob/main/PROTOCOL.md) documents TP-Link tpPLC-captured `0xA05C/0xA05D` read, `0xA058/0xA059` write, `0xA020/0xA021` apply, standby parameter `0x0029` (flag bit 15 plus timeout), and disable companion `0x0074`. Used as factual protocol reference, without copying implementation. Local TL-PA9020P / BCM60500 live readback confirmed both devices reported enabled with 300-second standby. Write behavior is implemented and tested with synthetic replies, **not yet verified live**.

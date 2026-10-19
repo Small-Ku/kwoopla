@@ -1,7 +1,7 @@
 # Project guidance
 
 - Keep protocol code separate from platform transport code.
-- Keep commands read-only unless a separate decision adds NMK/DAK changes, restart, factory reset, or other write operations.
+- Keep unrelated management commands read-only. The explicit Power Saving exception permits only per-device changes with preflight read, preserved standby timeout, acknowledged writes and apply, and verified readback. Do not introduce key management, restart, or factory reset.
 - Require an explicit Ethernet interface. Do not select one automatically.
 - Treat TP-Link TL-PA9020P / Broadcom BCM60500 as the first tested device. Mark behavior that lacks device evidence.
 - Use HomePlug specifications and compatible BSD/MIT references. Do not copy code from license-incompatible sources.

@@ -1,3 +1,4 @@
+mod power_cli;
 mod render;
 
 use anyhow::{Context, Result};
@@ -15,6 +16,7 @@ use kwoopla::{
     parse_broadcom_network_info, parse_discover_list, parse_network_stats,
     parse_station_capabilities,
 };
+use power_cli::PowerSavingOperation;
 use render::{render_discover, render_info, render_rates};
 use serde::Serialize;
 use std::time::Duration;
@@ -41,12 +43,16 @@ struct Args {
     command: Command,
 }
 
-#[derive(Subcommand, Clone, Copy, Serialize)]
+#[derive(Subcommand, Clone, Serialize)]
 #[serde(rename_all = "snake_case")]
 enum Command {
     Discover,
     Info,
     Rates,
+    PowerSaving {
+        #[command(subcommand)]
+        operation: PowerSavingOperation,
+    },
 }
 
 #[derive(Serialize)]
@@ -151,6 +157,9 @@ fn run() -> Result<()> {
     let mut transport = PlatformTransport::new(interface)
         .with_context(|| format!("opening selected interface {interface}"))?;
     let output = match args.command {
+        Command::PowerSaving { operation } => {
+            power_cli::run(&mut transport, interface, operation, args.json)?
+        }
         Command::Discover => {
             let (devices, networks) = discover(&mut transport).context("performing discovery")?;
             let result = DiscoverOutput {

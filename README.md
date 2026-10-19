@@ -1,8 +1,8 @@
 # kwoopla
 
-`kwoopla` is a Rust command-line utility and library for discovering HomePlug AV/AV2 powerline adapters and reading network information and PHY rates.
+`kwoopla` is a Rust command-line utility and library for discovering HomePlug AV/AV2 powerline adapters, reading network information and PHY rates, and managing Broadcom power saving.
 
-It is currently read-only and has been tested with TP-Link TL-PA9020P adapters using Broadcom BCM60500 hardware.
+Discovery, rates, and power-saving readback have been tested with TP-Link TL-PA9020P adapters using Broadcom BCM60500 hardware. Power-saving writes are implemented but have not yet been live-tested on these adapters.
 
 ## Platform support
 
@@ -50,6 +50,8 @@ On Windows, `-i` accepts an interface friendly name, adapter description, Npcap 
 - `discover`: find HomePlug devices on the selected Ethernet segment.
 - `info`: read station capabilities and supported vendor-specific network information.
 - `rates`: read transmit and receive PHY rates for visible peers.
+- `power-saving get`: read enabled state and standby timeout, optionally targeting `--device MAC`.
+- `power-saving set --device MAC on|off`: change one confirmed Broadcom adapter, preserving its current standby timeout. Requires acknowledged Set/Apply and matching readback.
 
 ## Supported protocol paths
 
@@ -58,7 +60,21 @@ On Windows, `-i` accepts an interface friendly name, adapter description, Npcap 
 - Broadcom / Mediaxtream network information over EtherType `0x8912`.
 - TP-Link TL-PA9020P / Broadcom BCM60500 live testing.
 
-Network key changes, restart, factory reset, and other write operations are not implemented.
+Network key changes, restart, factory reset, and unrelated write operations are not implemented.
+
+### Power-saving control
+
+Select the network interface explicitly. For example:
+
+```sh
+kwoopla -i eth0 --json power-saving get
+kwoopla -i eth0 power-saving get --device 00:11:22:33:44:55
+kwoopla -i eth0 power-saving set --device 00:11:22:33:44:55 off
+```
+
+The power-saving setting belongs to each powerline adapter, not the PC Ethernet NIC. Disabling may help prevent powerline standby from interfering with Wake-on-LAN, but WoL still depends on the PC NIC and the source of the Magic Packet.
+
+Writes are always explicit per-device; the CLI refuses unknown devices, missing capabilities, unknown parameter values, unacknowledged writes and failed readback. The write path follows public protocol observations from tpPLC, but is **not yet proven with a live configuration change on BCM60500**.
 
 See [protocol provenance](docs/provenance.md) for protocol sources and interoperability evidence.
 

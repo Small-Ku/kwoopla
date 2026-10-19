@@ -4,6 +4,7 @@ mod broadcom;
 mod capabilities;
 mod discover;
 mod network_stats;
+mod power_saving;
 
 pub use broadcom::{
     BroadcomNetwork, encode_broadcom_network_info_request, parse_broadcom_network_info,
@@ -11,6 +12,11 @@ pub use broadcom::{
 pub use capabilities::{StationCapabilities, parse_station_capabilities};
 pub use discover::{DiscoveredNetwork, DiscoveredStation, parse_discover_list};
 pub use network_stats::{PhyRate, parse_network_stats};
+pub use power_saving::{
+    APPLY_CONFIRM, GET_PARAM_CONFIRM, PARAM_POWER_STANDBY, PARAM_POWER_STANDBY_AUX,
+    PowerSavingState, SET_PARAM_ALT_CONFIRM, SET_PARAM_CONFIRM, encode_apply, encode_get_parameter,
+    encode_set_parameter, parse_parameter_value, strip_vendor_prefix,
+};
 
 pub const ETHERTYPE_HPAV: u16 = 0x88e1;
 pub const ETHERTYPE_MEDIAXTREAM: u16 = 0x8912;
